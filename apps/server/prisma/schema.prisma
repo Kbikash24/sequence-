@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Team {
+  red
+  blue
+}
+
+enum GameMode {
+  one_v_one @map("1v1")
+  two_v_two @map("2v2")
+}
+
+enum RoomStatus {
+  lobby
+  playing
+  finished
+  closed
+}
+
+enum GameStatus {
+  playing
+  finished
+}
+
+enum MoveType {
+  place
+  remove
+  exchangeDead
+  timeout
+}
+
+enum FinishReason {
+  sequences
+  forfeit
+  disconnect
+  stalemate
+}
+
+model User {
+  id          String       @id @db.Uuid
+  nickname    String       @db.VarChar(20)
+  createdAt   DateTime     @default(now())
+  lastSeenAt  DateTime     @default(now())
+  hostedRooms Room[]       @relation("RoomHost")
+  roomPlayers RoomPlayer[]
+  gamePlayers GamePlayer[]
+  moves       GameMove[]
+  stats       UserStats?
+}
+
+model Room {
+  id        String       @id @db.Uuid
+  code      String       @db.Char(6)
+  hostId    String       @db.Uuid
+  host      User         @relation("RoomHost", fields: [hostId], references: [id])
+  mode      GameMode
+  status    RoomStatus   @default(lobby)
+  createdAt DateTime     @default(now())
+  closedAt  DateTime?
+  players   RoomPlayer[]
+  games     Game[]
+
+  @@index([code, status])
+  @@index([hostId])
+}
+
+model RoomPlayer {
+  id       String    @id @default(uuid()) @db.Uuid
+  roomId   String    @db.Uuid
+  userId   String    @db.Uuid
+  team     Team
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  room     Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([userId])
+}
+
+model Game {
+  id        String       @id @db.Uuid
+  roomId    String       @db.Uuid
+  mode      GameMode
+  status    GameStatus   @default(playing)
+  startedAt DateTime
+  endedAt   DateTime?
+  room      Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  players   GamePlayer[]
+  moves     GameMove[]
+  result    GameResult?
+
+  @@index([roomId])
+  @@index([status, startedAt])
+}
+
+model GamePlayer {
+  id     String @id @default(uuid()) @db.Uuid
+  gameId String @db.Uuid
+  userId String @db.Uuid
+  team   Team
+  seat   Int    @db.SmallInt
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, seat])
+  @@unique([gameId, userId])
+  @@index([userId])
+}
+
+model GameMove {
+  id              String   @id @default(uuid()) @db.Uuid
+  gameId          String   @db.Uuid
+  userId          String   @db.Uuid
+  version         Int
+  type            MoveType
+  card            String?  @db.VarChar(2)
+  cell            Int?     @db.SmallInt
+  sequencesFormed Int      @default(0) @db.SmallInt
+  createdAt       DateTime @default(now())
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, version])
+  @@index([userId])
+}
+
+model GameResult {
+  id         String       @id @default(uuid()) @db.Uuid
+  gameId     String       @unique @db.Uuid
+  winnerTeam Team?
+  reason     FinishReason
+  durationMs Int
+  totalMoves Int
+  sequences  Json
+  createdAt  DateTime     @default(now())
+  game       Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+}
+
+model UserStats {
+  userId             String   @id @db.Uuid
+  gamesPlayed        Int      @default(0)
+  wins               Int      @default(0)
+  losses             Int      @default(0)
+  draws              Int      @default(0)
+  sequencesCompleted Int      @default(0)
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
