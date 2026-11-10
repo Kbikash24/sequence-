@@ -44,8 +44,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
+    // Browsers send origins without a trailing slash.
     clientOrigins: e.CLIENT_ORIGIN.split(",")
-      .map((o) => o.trim())
+      .map((o) => o.trim().replace(/\/+$/, ""))
       .filter(Boolean),
     // Dev fallback: sessions are invalidated on restart.
     jwtSecret: e.JWT_SECRET ?? randomBytes(48).toString("base64url"),
