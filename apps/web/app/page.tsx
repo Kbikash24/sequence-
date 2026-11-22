@@ -15,7 +15,7 @@ const FEATURES = [
 export default function HomePage() {
   return (
     <main>
-      <header className="reveal mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
+      <header className="reveal mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <Logo />
         <Link
           href="#how-to-play"

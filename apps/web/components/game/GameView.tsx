@@ -83,7 +83,7 @@ export function GameView({
             : "Pick a highlighted spot";
 
   return (
-    <div className="mx-auto grid w-full max-w-[1440px] gap-3 px-2 pb-6 pt-4 sm:px-4 sm:pt-6 lg:grid-cols-[17rem_minmax(0,1fr)_19rem]">
+    <div className="mx-auto grid w-full max-w-[1440px] gap-3 px-2 pb-4 pt-4 sm:px-4 sm:pt-6 lg:grid-cols-[17rem_minmax(0,1fr)_19rem]">
       <aside className="order-2 space-y-3 lg:order-1">
         {header}
         <section className="glass space-y-3 rounded-2xl p-3">
