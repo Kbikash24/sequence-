@@ -67,7 +67,7 @@ export function ResultsView({
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 22 }}
-          className="glass w-full max-w-lg rounded-3xl p-6 text-center shadow-2xl sm:p-8"
+          className="glass w-full max-w-lg rounded-3xl bg-slate-900/70 p-6 text-center shadow-2xl backdrop-blur-md sm:p-8"
         >
           <motion.div
             initial={{ rotate: -20, scale: 0 }}
@@ -96,7 +96,7 @@ export function ResultsView({
                   : `${result.winner} wins`
               : "Draw"}
           </h2>
-          <p className="mt-1 text-slate-300">
+          <p className="mt-1 text-slate-100">
             {result.winner ? (
               <>
                 <span
