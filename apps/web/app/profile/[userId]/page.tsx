@@ -9,20 +9,26 @@ import type { PlayerProfile } from "@sequence/shared";
 export default function ProfilePage({
   params,
 }: {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }) {
   const user = useSession((s) => s.user);
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then((p) => setUserId(p.userId));
+  }, [params]);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!userId || !user) return;
       try {
         const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
         const token = useSession.getState().token;
         const response = await fetch(
-          `${serverUrl}/profile/${params.userId}`,
+          `${serverUrl}/profile/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -41,10 +47,8 @@ export default function ProfilePage({
       }
     };
 
-    if (user) {
-      fetchProfile();
-    }
-  }, [params.userId, user]);
+    fetchProfile();
+  }, [userId, user]);
 
   if (loading) {
     return (
@@ -74,7 +78,7 @@ export default function ProfilePage({
     );
   }
 
-  const isOwnProfile = user?.id === params.userId;
+  const isOwnProfile = user?.id === userId;
   const { stats, winRate, level } = profile;
   const joinedDate = new Date(profile.createdAt).toLocaleDateString("en-US", {
     year: "numeric",
