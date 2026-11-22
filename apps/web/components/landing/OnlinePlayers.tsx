@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import clsx from "clsx";
 import { Loader2, Swords, Users, X } from "lucide-react";
 import type { PresenceStatus } from "@sequence/shared";
@@ -59,10 +60,18 @@ export function OnlinePlayers({ selfId }: { selfId: string }) {
           {others.map((u) => (
             <li
               key={u.userId}
-              className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-3 py-2"
+              className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-3 py-2 group"
             >
-              <Avatar name={u.nickname} team="blue" size="sm" />
-              <div className="min-w-0 flex-1">
+              <Link
+                href={`/profile/${u.userId}`}
+                className="flex-shrink-0 hover:scale-110 transition"
+              >
+                <Avatar name={u.nickname} team="blue" size="sm" />
+              </Link>
+              <Link
+                href={`/profile/${u.userId}`}
+                className="min-w-0 flex-1 group-hover:text-gradient transition"
+              >
                 <p className="truncate text-sm font-medium">{u.nickname}</p>
                 <p className="flex items-center gap-1.5 text-xs text-slate-400">
                   <span
@@ -77,7 +86,7 @@ export function OnlinePlayers({ selfId }: { selfId: string }) {
                   />
                   {STATUS_LABEL[u.status]}
                 </p>
-              </div>
+              </Link>
               <Button
                 size="sm"
                 variant="secondary"

@@ -107,5 +107,34 @@ export function createRoutes({
     }
   });
 
+  router.get("/profile/:userId", auth, async (req, res) => {
+    try {
+      const profile = await persistence.getPlayerProfile(req.params.userId);
+      if (!profile) {
+        res.status(404).json({ error: "Player not found" });
+        return;
+      }
+      const level = Math.floor(profile.stats.gamesPlayed / 10);
+      const winRate = profile.stats.gamesPlayed > 0
+        ? Math.round((profile.stats.wins / profile.stats.gamesPlayed) * 100)
+        : 0;
+      res.json({
+        profile: {
+          userId: req.params.userId,
+          nickname: profile.nickname,
+          createdAt: profile.createdAt,
+          stats: profile.stats,
+          winRate,
+          level,
+        },
+      });
+    } catch (err) {
+      logger.error("failed to load profile", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      res.status(503).json({ error: "Profile unavailable" });
+    }
+  });
+
   return router;
 }

@@ -162,6 +162,15 @@ export interface UserStatsDTO {
   sequencesCompleted: number;
 }
 
+export interface PlayerProfile {
+  userId: string;
+  nickname: string;
+  createdAt: number;
+  stats: UserStatsDTO;
+  winRate: number;
+  level: number;
+}
+
 export interface HandPayload {
   gameId: string;
   version: number;

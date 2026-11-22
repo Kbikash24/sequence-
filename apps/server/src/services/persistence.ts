@@ -36,6 +36,7 @@ export interface Persistence {
   recordMove(gameId: string, move: MoveRecord): Promise<void>;
   recordGameFinished(state: GameState): Promise<void>;
   getUserStats(userId: string): Promise<UserStatsDTO | null>;
+  getPlayerProfile(userId: string): Promise<{ nickname: string; createdAt: number; stats: UserStatsDTO } | null>;
   close(): Promise<void>;
 }
 
@@ -49,6 +50,9 @@ export class NoopPersistence implements Persistence {
   async recordMove() {}
   async recordGameFinished() {}
   async getUserStats() {
+    return null;
+  }
+  async getPlayerProfile() {
     return null;
   }
   async close() {}

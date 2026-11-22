@@ -160,6 +160,26 @@ export class PrismaPersistence implements Persistence {
     return { gamesPlayed, wins, losses, draws, sequencesCompleted };
   }
 
+  async getPlayerProfile(userId: string): Promise<{ nickname: string; createdAt: number; stats: UserStatsDTO } | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { stats: true },
+    });
+    if (!user) return null;
+    const stats = user.stats ?? {
+      gamesPlayed: 0,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      sequencesCompleted: 0,
+    };
+    return {
+      nickname: user.nickname,
+      createdAt: user.createdAt.getTime(),
+      stats,
+    };
+  }
+
   async close() {
     await this.prisma.$disconnect();
   }
