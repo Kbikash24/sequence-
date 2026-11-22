@@ -25,8 +25,8 @@ export default function HomePage() {
         </Link>
       </header>
 
-      <section className="mx-auto max-w-6xl px-4 pb-10 pt-6 lg:pt-14">
-        <div className="space-y-7 mb-10">
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-10 pt-6 lg:grid-cols-[1.05fr_1fr] lg:pt-14">
+        <div className="space-y-7">
           <div className="space-y-4">
             <p
               className="reveal glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-slate-200"
@@ -44,13 +44,16 @@ export default function HomePage() {
               <span className="text-gradient">Outplay your friends.</span>
             </h1>
             <p
-              className="reveal max-w-lg text-lg text-slate-300"
+              className="reveal text-lg text-slate-300"
               style={{ "--d": "0.3s" } as CSSProperties}
             >
               Play cards, claim spaces and build sequences on a 10×10 board.
               Create a private room, share the code, and play live from any
               device.
             </p>
+          </div>
+          <div className="reveal" style={{ "--d": "0.4s" } as CSSProperties}>
+            <EntryPanel />
           </div>
           <ul
             className="reveal flex flex-wrap gap-2.5 text-sm text-slate-300"
@@ -66,9 +69,8 @@ export default function HomePage() {
             ))}
           </ul>
         </div>
-
         <div
-          className="reveal relative mx-auto w-full max-w-2xl mb-10"
+          className="reveal relative mx-auto w-full max-w-md lg:max-w-none"
           style={{ "--d": "0.35s" } as CSSProperties}
         >
           <FloatingCard
@@ -92,10 +94,6 @@ export default function HomePage() {
             style={{ "--r": "-6deg", animationDelay: "2.4s" } as CSSProperties}
           />
           <BoardPreview />
-        </div>
-
-        <div className="reveal" style={{ "--d": "0.4s" } as CSSProperties}>
-          <EntryPanel />
         </div>
       </section>
 
