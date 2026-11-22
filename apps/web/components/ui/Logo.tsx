@@ -5,8 +5,8 @@ export function LogoMark({ className }: { className?: string }) {
     <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
       <defs>
         <linearGradient id="lm-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#1b2654" />
-          <stop offset="1" stopColor="#0a1130" />
+          <stop offset="0" stopColor="#4c1d95" />
+          <stop offset="1" stopColor="#0c0a2a" />
         </linearGradient>
       </defs>
       <rect
@@ -16,7 +16,7 @@ export function LogoMark({ className }: { className?: string }) {
         height="44"
         rx="12"
         fill="url(#lm-bg)"
-        stroke="rgba(255,255,255,0.12)"
+        stroke="rgba(196,181,253,0.45)"
       />
       {[0, 1, 2, 3, 4].map((i) => (
         <circle
@@ -24,7 +24,7 @@ export function LogoMark({ className }: { className?: string }) {
           cx={10 + i * 7}
           cy={38 - i * 7}
           r="4"
-          fill={i % 2 ? "#38bdf8" : "#f43f5e"}
+          fill={i % 2 ? "#22d3ee" : "#fb4a6b"}
         />
       ))}
     </svg>
@@ -36,6 +36,7 @@ export function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
     <span className="inline-flex items-center gap-2.5">
       <LogoMark
         className={clsx(
+          "drop-shadow-[0_0_10px_rgba(167,139,250,0.55)]",
           size === "lg" ? "h-12 w-12" : size === "md" ? "h-9 w-9" : "h-7 w-7",
         )}
       />
@@ -46,10 +47,7 @@ export function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
         )}
       >
         Sequence
-        <span className="bg-linear-to-r from-rose-400 to-sky-400 bg-clip-text text-transparent">
-          {" "}
-          Arena
-        </span>
+        <span className="text-gradient"> Arena</span>
       </span>
     </span>
   );

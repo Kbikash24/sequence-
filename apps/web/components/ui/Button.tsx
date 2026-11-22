@@ -6,10 +6,12 @@ type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-linear-to-r from-rose-500 via-fuchsia-500 to-sky-500 text-white shadow-lg shadow-fuchsia-900/30 hover:brightness-110",
-  secondary: "bg-white/8 text-slate-100 ring-1 ring-white/12 hover:bg-white/12",
-  ghost: "text-slate-300 hover:bg-white/6 hover:text-white",
-  danger: "bg-rose-600/90 text-white hover:bg-rose-500",
+    "btn-glow relative overflow-hidden text-white hover:-translate-y-0.5 hover:brightness-110 before:absolute before:inset-0 before:-translate-x-full before:bg-linear-to-r before:from-transparent before:via-white/35 before:to-transparent before:transition-transform before:duration-700 hover:before:translate-x-full",
+  secondary:
+    "bg-white/8 text-slate-100 ring-1 ring-white/15 backdrop-blur-md hover:-translate-y-0.5 hover:bg-white/14 hover:ring-violet-300/40",
+  ghost: "text-slate-300 hover:bg-white/8 hover:text-white",
+  danger:
+    "bg-linear-to-r from-rose-600 to-red-500 text-white shadow-lg shadow-rose-900/40 hover:-translate-y-0.5 hover:brightness-110",
 };
 
 const SIZES: Record<Size, string> = {

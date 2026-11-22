@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Activity, MessageSquare } from "lucide-react";
 import { getCardTargets } from "@sequence/game-engine";
 import {
@@ -19,9 +19,11 @@ import { ActivityLog, ChatPanel } from "./Sidebar";
 export function GameView({
   meId,
   actions,
+  header,
 }: {
   meId: string;
   actions: RoomActions;
+  header?: ReactNode;
 }) {
   const game = useGameStore((s) => s.game)!;
   const room = useGameStore((s) => s.room)!;
@@ -81,8 +83,9 @@ export function GameView({
             : "Pick a highlighted spot";
 
   return (
-    <div className="mx-auto grid w-full max-w-[1440px] gap-3 px-2 pb-6 sm:px-4 lg:grid-cols-[17rem_minmax(0,1fr)_19rem]">
+    <div className="mx-auto grid w-full max-w-[1440px] gap-3 px-2 pb-6 pt-4 sm:px-4 sm:pt-6 lg:grid-cols-[17rem_minmax(0,1fr)_19rem]">
       <aside className="order-2 space-y-3 lg:order-1">
+        {header}
         <section className="glass space-y-3 rounded-2xl p-3">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400">
             Sequences · first to {game.sequencesToWin}
@@ -110,7 +113,7 @@ export function GameView({
         <div
           className={clsx(
             "glass flex flex-wrap items-center justify-between gap-2 rounded-2xl px-4 py-2.5",
-            myTurn && "ring-2 ring-amber-300/60",
+            myTurn && "turn-glow",
           )}
           aria-live="polite"
         >

@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { Loader2, LogOut, Wifi, WifiOff } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { GameView } from "@/components/game/GameView";
 import { ResultsView } from "@/components/game/ResultsView";
 import { LobbyView } from "@/components/lobby/LobbyView";
 import { NicknameForm } from "@/components/NicknameForm";
 import { Button } from "@/components/ui/Button";
-import { Logo } from "@/components/ui/Logo";
 import { Modal } from "@/components/ui/Modal";
 import { NoticeToast } from "@/components/ui/NoticeToast";
+import { RoomHeader } from "@/components/room/RoomHeader";
 import { useMounted } from "@/hooks/useClient";
 import { useRoom } from "@/hooks/useRoom";
 import { getSocket } from "@/services/socket";
@@ -111,16 +111,28 @@ function ConnectedRoom({
   if (!room) return <FullScreenMessage title="Connecting to room…" spinner />;
 
   const inGame = room.status !== "lobby" && game;
+  const onLeave = () =>
+    room.status === "playing" ? setConfirmLeave(true) : void leave();
   return (
     <Shell
       code={room.code}
       connection={connection}
-      onLeave={() =>
-        room.status === "playing" ? setConfirmLeave(true) : void leave()
-      }
+      onLeave={onLeave}
+      hideHeader={!!inGame}
     >
       {inGame ? (
-        <GameView meId={meId} actions={actions} />
+        <GameView
+          meId={meId}
+          actions={actions}
+          header={
+            <RoomHeader
+              variant="panel"
+              code={room.code}
+              connection={connection}
+              onLeave={onLeave}
+            />
+          }
+        />
       ) : (
         <LobbyView meId={meId} actions={actions} />
       )}
@@ -157,52 +169,21 @@ function Shell({
   code,
   connection,
   onLeave,
+  hideHeader,
   children,
 }: {
   code: string;
   connection?: string;
   onLeave?: () => void;
+  hideHeader?: boolean;
   children: ReactNode;
 }) {
   return (
     <div className="min-h-dvh">
       <NoticeToast />
-      <header className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-3 px-4 py-3">
-        <Link href="/" aria-label="Sequence Arena home">
-          <Logo size="sm" />
-        </Link>
-        <div className="flex items-center gap-2">
-          <span className="hidden rounded-lg bg-white/5 px-2.5 py-1 font-mono text-sm tracking-widest text-slate-300 sm:inline">
-            {code}
-          </span>
-          {connection && (
-            <span
-              className="flex items-center gap-1 text-xs text-slate-400"
-              aria-live="polite"
-              title={connection === "connected" ? "Connected" : "Reconnecting"}
-            >
-              {connection === "connected" ? (
-                <Wifi className="h-4 w-4 text-emerald-400" />
-              ) : (
-                <>
-                  <WifiOff className="h-4 w-4 text-amber-300" /> Reconnecting…
-                </>
-              )}
-            </span>
-          )}
-          {onLeave && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={onLeave}
-              aria-label="Leave room"
-            >
-              <LogOut className="h-4 w-4" />{" "}
-              <span className="hidden sm:inline">Leave</span>
-            </Button>
-          )}
-        </div>
-      </header>
+      {!hideHeader && (
+        <RoomHeader code={code} connection={connection} onLeave={onLeave} />
+      )}
       {children}
     </div>
   );

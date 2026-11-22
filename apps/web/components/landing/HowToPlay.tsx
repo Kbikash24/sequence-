@@ -1,4 +1,5 @@
 import { Eye, Layers, Star, Trophy } from "lucide-react";
+import { Reveal } from "@/components/ui/Reveal";
 
 const STEPS = [
   {
@@ -26,25 +27,33 @@ const STEPS = [
 export function HowToPlay() {
   return (
     <section id="how-to-play" className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
-      <h2 className="text-center font-display text-3xl font-extrabold sm:text-4xl">
-        How to play
-      </h2>
-      <p className="mx-auto mt-3 max-w-xl text-center text-slate-400">
-        Learn in a minute, master over many matches. Play 1v1 or team up 2v2.
-      </p>
+      <Reveal>
+        <h2 className="text-center font-display text-3xl font-extrabold sm:text-4xl">
+          How to <span className="text-gradient">play</span>
+        </h2>
+        <p className="mx-auto mt-3 max-w-xl text-center text-slate-300">
+          Learn in a minute, master over many matches. Play 1v1 or team up 2v2.
+        </p>
+      </Reveal>
       <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {STEPS.map(({ icon: Icon, title, body }, i) => (
-          <li key={title} className="glass rounded-2xl p-5">
-            <div className="mb-4 flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-linear-to-br from-rose-500/30 to-sky-500/30 ring-1 ring-white/10">
-                <Icon className="h-5 w-5" />
-              </span>
-              <span className="font-mono text-sm text-slate-500">0{i + 1}</span>
-            </div>
-            <h3 className="font-display text-lg font-bold">{title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-400">
-              {body}
-            </p>
+          <li key={title}>
+            <Reveal delay={i * 0.1} className="h-full">
+              <div className="glass glass-hover h-full rounded-2xl p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-linear-to-br from-rose-500/40 via-violet-500/40 to-cyan-400/40 shadow-[0_0_20px_-4px_rgba(167,139,250,0.7)] ring-1 ring-white/20">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="font-mono text-sm text-violet-300/70">
+                    0{i + 1}
+                  </span>
+                </div>
+                <h3 className="font-display text-lg font-bold">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                  {body}
+                </p>
+              </div>
+            </Reveal>
           </li>
         ))}
       </ol>

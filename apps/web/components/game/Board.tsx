@@ -43,7 +43,7 @@ export function Board({
       role="grid"
       aria-label="Game board"
       className={clsx(
-        "grid aspect-square w-full grid-cols-10 gap-[2px] rounded-2xl bg-navy-800/90 p-1.5 shadow-2xl ring-1 ring-white/10 sm:gap-1 sm:p-2",
+        "board-frame grid aspect-square w-full grid-cols-10 gap-[2px] rounded-2xl p-1.5 sm:gap-1 sm:p-2",
         className,
       )}
     >

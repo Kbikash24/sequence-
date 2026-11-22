@@ -41,8 +41,8 @@ export function BoardPreview() {
 
   return (
     <div className="relative" aria-hidden="true">
-      <div className="absolute -inset-6 rounded-[2.5rem] bg-linear-to-br from-rose-500/30 via-fuchsia-500/20 to-sky-500/30 blur-3xl" />
-      <div className="relative grid aspect-square w-full grid-cols-10 gap-1 rounded-3xl bg-navy-800/90 p-2.5 shadow-2xl ring-1 ring-white/10">
+      <div className="absolute -inset-6 animate-pulse rounded-[2.5rem] bg-linear-to-br from-rose-500/30 via-violet-500/30 to-cyan-400/30 blur-3xl" />
+      <div className="board-frame relative grid aspect-square w-full grid-cols-10 gap-1 rounded-3xl p-2.5">
         {BOARD_LAYOUT.map((card, cell) => {
           const chip = chips.get(cell);
           return (
