@@ -53,16 +53,29 @@ function RightColumnContent() {
 }
 
 export default function HomePage() {
+  const user = useSession((s) => s.user);
+
   return (
     <main>
       <header className="reveal mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <Logo />
-        <Link
-          href="#how-to-play"
-          className="glass glass-hover rounded-full px-4 py-1.5 text-sm font-medium text-slate-200 hover:text-white"
-        >
-          How to play
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="#how-to-play"
+            className="glass glass-hover rounded-full px-4 py-1.5 text-sm font-medium text-slate-200 hover:text-white"
+          >
+            How to play
+          </Link>
+          {user && (
+            <Link
+              href="/settings"
+              className="glass glass-hover rounded-full px-4 py-1.5 text-sm font-medium text-slate-200 hover:text-white"
+              title="Profile Settings"
+            >
+              ⚙️ Settings
+            </Link>
+          )}
+        </div>
       </header>
 
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-10 pt-6 lg:grid-cols-[1.05fr_1fr] lg:pt-14">
