@@ -1,24 +1,25 @@
-import { Eye, Layers, Star, Trophy } from "lucide-react";
+import Image from "next/image";
 import { Reveal } from "@/components/ui/Reveal";
+import { ICON_PATHS } from "@/lib/icons";
 
 const STEPS = [
   {
-    icon: Layers,
+    icon: ICON_PATHS.ace,
     title: "Play a card",
     body: "On your turn, play a card from your hand and place a chip on one of the two matching spaces. You then draw a replacement.",
   },
   {
-    icon: Eye,
+    icon: ICON_PATHS.jackOfSpades,
     title: "Use the jacks",
     body: "Two-eyed jacks are wild: place a chip on any open space. One-eyed jacks remove an opponent chip — but never one inside a finished sequence.",
   },
   {
-    icon: Star,
+    icon: ICON_PATHS.threeDots,
     title: "Build sequences",
     body: "Five chips in a row — across, down or diagonally — form a sequence. The star corners count for everyone.",
   },
   {
-    icon: Trophy,
+    icon: ICON_PATHS.trophy,
     title: "Win with two",
     body: "First team to two sequences wins. Two sequences may share at most one chip. Holding a dead card? Swap it once per turn.",
   },
@@ -36,14 +37,19 @@ export function HowToPlay() {
         </p>
       </Reveal>
       <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {STEPS.map(({ icon: Icon, title, body }, i) => (
+        {STEPS.map(({ icon: iconPath, title, body }, i) => (
           <li key={title}>
             <Reveal delay={i * 0.1} className="h-full">
               <div className="glass glass-hover h-full rounded-2xl p-5">
                 <div className="mb-4 flex items-center gap-3">
-                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-linear-to-br from-rose-500/40 via-violet-500/40 to-cyan-400/40 shadow-[0_0_20px_-4px_rgba(167,139,250,0.7)] ring-1 ring-white/20">
-                    <Icon className="h-5 w-5" />
-                  </span>
+                  <div className="relative h-11 w-11 rounded-xl bg-linear-to-br from-rose-500/40 via-violet-500/40 to-cyan-400/40 shadow-[0_0_20px_-4px_rgba(167,139,250,0.7)] ring-1 ring-white/20 overflow-hidden">
+                    <Image
+                      src={iconPath}
+                      alt={title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                   <span className="font-mono text-sm text-violet-300/70">
                     0{i + 1}
                   </span>
