@@ -68,11 +68,17 @@ Without `DATABASE_URL` the server runs fully in memory (no stats/history). Witho
 
 Client → server (all acknowledged with `{ ok, data | error, code }`):
 `room:create`, `room:join`, `room:leave`, `room:ready`, `room:setTeam`, `room:setMode`, `room:start`,
-`room:toLobby`, `game:action`, `game:sync`, `game:rematch`, `chat:send`.
+`room:toLobby`, `game:action`, `game:sync`, `game:rematch`, `chat:send`, `presence:watch`,
+`challenge:send`, `challenge:respond`, `challenge:cancel`.
 
 Server → client:
 `room:state`, `room:closed`, `game:state`, `game:hand`, `game:event`, `game:over`, `game:rematch`,
-`player:disconnected`, `player:reconnected`, `chat:message`, `session:replaced`.
+`player:disconnected`, `player:reconnected`, `chat:message`, `session:replaced`, `presence:update`,
+`challenge:received`, `challenge:resolved`.
+
+Online players and direct challenges: clients `presence:watch` to receive the live online list. A 1v1
+challenge expires after 60s and is cancelled if either side goes offline; accepting creates a room with both
+players seated and returns its code in `challenge:resolved`.
 
 ### HTTP API
 

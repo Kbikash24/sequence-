@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { getCardTargets } from "@sequence/game-engine";
-import { isOneEyedJack, type RoomSnapshot } from "@sequence/shared";
+import {
+  isOneEyedJack,
+  type Challenge,
+  type ChallengeResolved,
+  type OnlineUser,
+  type RoomSnapshot,
+} from "@sequence/shared";
 import {
   connectSocket,
   startServer,
@@ -431,5 +437,105 @@ describe("reliability", () => {
     );
     expect(results.filter((r) => r.ok).length).toBeLessThanOrEqual(5);
     expect(results.some((r) => !r.ok && r.code === "RATE_LIMITED")).toBe(true);
+  });
+});
+
+describe("presence and challenges", () => {
+  it("lists online players and pushes updates to watchers", async () => {
+    await setup();
+    const a = await player("Alice");
+    const initial = await a.emit<OnlineUser[]>("presence:watch", {
+      watch: true,
+    });
+    expect(initial.ok && initial.data.map((u) => u.nickname)).toEqual([
+      "Alice",
+    ]);
+
+    const update = waitFor<OnlineUser[]>(
+      a.socket,
+      "presence:update",
+      (users) => users.length === 2,
+    );
+    const b = await player("Bob");
+    const users = await update;
+    expect(users.find((u) => u.userId === b.user.id)?.status).toBe("available");
+  });
+
+  it("creates a ready 1v1 room when a challenge is accepted", async () => {
+    await setup();
+    const a = await player("Alice");
+    const b = await player("Bob");
+    const received = waitFor<Challenge>(b.socket, "challenge:received");
+    const sent = await a.emit<Challenge>("challenge:send", {
+      toUserId: b.user.id,
+    });
+    expect(sent.ok).toBe(true);
+    const challenge = await received;
+    expect(challenge.fromId).toBe(a.user.id);
+
+    const resolved = waitFor<ChallengeResolved>(a.socket, "challenge:resolved");
+    const res = await b.emit<{ code: string }>("challenge:respond", {
+      challengeId: challenge.id,
+      accept: true,
+    });
+    expect(res.ok).toBe(true);
+    const { code } = (await resolved) as { outcome: string; code: string };
+    const room = ctx!.server.rooms.getRoom(code)!;
+    expect(room.hostId).toBe(a.user.id);
+    expect(room.players.map((p) => p.userId).sort()).toEqual(
+      [a.user.id, b.user.id].sort(),
+    );
+    expect((await a.emit("room:start")).ok).toBe(true);
+  });
+
+  it("notifies the challenger when declined, and rejects invalid targets", async () => {
+    await setup();
+    const a = await player("Alice");
+    const b = await player("Bob");
+    const self = await a.emit("challenge:send", { toUserId: a.user.id });
+    expect(!self.ok).toBe(true);
+    const missing = await a.emit("challenge:send", { toUserId: "nobody" });
+    expect(!missing.ok && missing.code).toBe("USER_OFFLINE");
+
+    const received = waitFor<Challenge>(b.socket, "challenge:received");
+    await a.emit("challenge:send", { toUserId: b.user.id });
+    const challenge = await received;
+    const again = await a.emit("challenge:send", { toUserId: b.user.id });
+    expect(!again.ok && again.code).toBe("CHALLENGE_EXISTS");
+
+    const resolved = waitFor<ChallengeResolved>(a.socket, "challenge:resolved");
+    await b.emit("challenge:respond", {
+      challengeId: challenge.id,
+      accept: false,
+    });
+    expect((await resolved).outcome).toBe("declined");
+    const stale = await b.emit("challenge:respond", {
+      challengeId: challenge.id,
+      accept: true,
+    });
+    expect(!stale.ok && stale.code).toBe("CHALLENGE_NOT_FOUND");
+  });
+
+  it("refuses to challenge players in a game and expires unanswered challenges", async () => {
+    await setup({ challengeMs: 150 });
+    const { host } = await startOneVsOne();
+    const c = await player("Carol");
+    const busy = await c.emit("challenge:send", { toUserId: host.user.id });
+    expect(!busy.ok && busy.code).toBe("USER_BUSY");
+
+    const d = await player("Dave");
+    const resolved = waitFor<ChallengeResolved>(c.socket, "challenge:resolved");
+    await c.emit("challenge:send", { toUserId: d.user.id });
+    expect((await resolved).outcome).toBe("expired");
+  });
+
+  it("cancels pending challenges when the challenger goes offline", async () => {
+    await setup();
+    const a = await player("Alice");
+    const b = await player("Bob");
+    await a.emit("challenge:send", { toUserId: b.user.id });
+    const resolved = waitFor<ChallengeResolved>(b.socket, "challenge:resolved");
+    a.socket.disconnect();
+    expect((await resolved).outcome).toBe("cancelled");
   });
 });

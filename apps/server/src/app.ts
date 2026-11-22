@@ -9,6 +9,7 @@ import helmet from "helmet";
 import { Server } from "socket.io";
 import { createTokenService } from "./auth/tokens";
 import type { AppConfig } from "./config";
+import { PresenceManager } from "./presence/PresenceManager";
 import { RoomManager } from "./rooms/RoomManager";
 import type { AppServer } from "./rooms/types";
 import { createRoutes } from "./routes";
@@ -48,6 +49,10 @@ export function createSequenceServer(
     logger,
   });
 
+  const presence = new PresenceManager(io, rooms, {
+    challengeTtlMs: config.challengeMs ?? 60_000,
+  });
+
   app.use("/api", createRoutes({ tokens, rooms, persistence, logger }));
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found" });
@@ -66,7 +71,7 @@ export function createSequenceServer(
       .json({ error: status >= 500 ? "Internal server error" : "Bad request" });
   });
 
-  registerSocketHandlers(io, rooms, tokens, logger);
+  registerSocketHandlers(io, rooms, presence, tokens, logger);
 
   return {
     app,
@@ -75,6 +80,7 @@ export function createSequenceServer(
     rooms,
     tokens,
     async close() {
+      presence.shutdown();
       rooms.shutdown();
       await new Promise<void>((resolve) => io.close(() => resolve()));
       await persistence.close();

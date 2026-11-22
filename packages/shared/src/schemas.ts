@@ -60,6 +60,13 @@ export const eventSchemas = {
   "game:sync": emptyPayloadSchema,
   "game:rematch": z.object({ vote: z.boolean() }),
   "chat:send": z.object({ text: z.string().trim().min(1).max(200) }),
+  "presence:watch": z.object({ watch: z.boolean() }),
+  "challenge:send": z.object({ toUserId: z.string().min(1).max(64) }),
+  "challenge:respond": z.object({
+    challengeId: z.string().min(1).max(64),
+    accept: z.boolean(),
+  }),
+  "challenge:cancel": z.object({ challengeId: z.string().min(1).max(64) }),
 } as const;
 
 export const guestLoginSchema = z.object({ nickname: nicknameSchema });

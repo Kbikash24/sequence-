@@ -1,11 +1,14 @@
 import type {
   Ack,
   ActivityEntry,
+  Challenge,
+  ChallengeResolved,
   ChatMessage,
   GameAction,
   GameMode,
   GameOverPayload,
   HandPayload,
+  OnlineUser,
   PublicGameState,
   RoomInfo,
   RoomSnapshot,
@@ -40,6 +43,19 @@ export interface ClientToServerEvents {
   "game:sync": (payload: EmptyPayload, ack: AckFn<RoomSnapshot>) => void;
   "game:rematch": (payload: { vote: boolean }, ack: AckFn) => void;
   "chat:send": (payload: { text: string }, ack: AckFn) => void;
+  "presence:watch": (
+    payload: { watch: boolean },
+    ack: AckFn<OnlineUser[]>,
+  ) => void;
+  "challenge:send": (
+    payload: { toUserId: string },
+    ack: AckFn<Challenge>,
+  ) => void;
+  "challenge:respond": (
+    payload: { challengeId: string; accept: boolean },
+    ack: AckFn<{ code: string | null }>,
+  ) => void;
+  "challenge:cancel": (payload: { challengeId: string }, ack: AckFn) => void;
 }
 
 export interface ServerToClientEvents {
@@ -57,6 +73,9 @@ export interface ServerToClientEvents {
   "player:reconnected": (payload: { userId: string }) => void;
   "chat:message": (message: ChatMessage) => void;
   "session:replaced": () => void;
+  "presence:update": (users: OnlineUser[]) => void;
+  "challenge:received": (challenge: Challenge) => void;
+  "challenge:resolved": (payload: ChallengeResolved) => void;
 }
 
 export type ClientEventName = keyof ClientToServerEvents;

@@ -178,8 +178,40 @@ export interface RoomSnapshot {
   disconnects: Record<string, number>;
 }
 
+export type PresenceStatus = "available" | "in_lobby" | "in_game";
+
+export interface OnlineUser {
+  userId: string;
+  nickname: string;
+  status: PresenceStatus;
+}
+
+/** A pending 1v1 challenge from one online player to another. */
+export interface Challenge {
+  id: string;
+  fromId: string;
+  fromNickname: string;
+  toId: string;
+  toNickname: string;
+  expiresAt: number;
+}
+
+export type ChallengeOutcome =
+  "accepted" | "declined" | "cancelled" | "expired" | "offline";
+
+export interface ChallengeResolved {
+  challengeId: string;
+  outcome: ChallengeOutcome;
+  /** Room code to join, present when the challenge was accepted. */
+  code?: string;
+}
+
 export type ErrorCode =
   | "UNAUTHORIZED"
+  | "USER_OFFLINE"
+  | "USER_BUSY"
+  | "CHALLENGE_EXISTS"
+  | "CHALLENGE_NOT_FOUND"
   | "RATE_LIMITED"
   | "INVALID_PAYLOAD"
   | "NOT_FOUND"

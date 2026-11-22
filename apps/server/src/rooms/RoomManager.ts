@@ -54,6 +54,8 @@ const teamName = (team: Team) => (team === "red" ? "Red" : "Blue");
 export class RoomManager {
   private readonly rooms = new Map<string, Room>();
   private readonly userRooms = new Map<string, string>();
+  /** Invoked whenever a user's room/lobby/game state may have changed. */
+  onPresenceChange: (() => void) | null = null;
 
   constructor(
     private readonly io: AppServer,
@@ -143,6 +145,19 @@ export class RoomManager {
     this.addPlayer(room, user);
     this.options.logger.info("room created", { code, mode });
     return this.snapshot(room, user.id);
+  }
+
+  /** Creates a 1v1 room with both players seated and the guest already ready. */
+  createChallengeRoom(host: GuestUser, guest: GuestUser): string {
+    for (const u of [host, guest]) {
+      if (this.roomOf(u.id)?.status === "playing") {
+        throw new RoomError("USER_BUSY", `${u.nickname} is already in a game`);
+      }
+    }
+    const { room } = this.createRoom(host, "1v1");
+    this.joinRoom(guest, room.code);
+    this.setReady(guest, true);
+    return room.code;
   }
 
   joinRoom(user: GuestUser, code: string): RoomSnapshot {
@@ -468,6 +483,7 @@ export class RoomManager {
     room.rematchVotes.delete(userId);
     this.io.in(userChannel(userId)).socketsLeave(roomChannel(room.code));
     this.persist(room, (p) => p.recordRoomPlayerLeft(room.id, userId));
+    this.onPresenceChange?.();
 
     if (room.players.length === 0) {
       this.destroyRoom(room);
@@ -683,6 +699,7 @@ export class RoomManager {
   }
 
   private broadcastRoom(room: Room): void {
+    this.onPresenceChange?.();
     this.io
       .to(roomChannel(room.code))
       .emit("room:state", this.toRoomInfo(room));
@@ -706,12 +723,10 @@ export class RoomManager {
   }
 
   private emitRematch(room: Room): void {
-    this.io
-      .to(roomChannel(room.code))
-      .emit("game:rematch", {
-        votes: [...room.rematchVotes],
-        required: this.capacity(room),
-      });
+    this.io.to(roomChannel(room.code)).emit("game:rematch", {
+      votes: [...room.rematchVotes],
+      required: this.capacity(room),
+    });
   }
 
   private logMove(

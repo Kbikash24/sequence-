@@ -28,6 +28,8 @@ export interface AppConfig {
   databaseUrl?: string;
   turnMs: number;
   reconnectMs: number;
+  /** How long a direct challenge stays open; defaults to 60s. */
+  challengeMs?: number;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {

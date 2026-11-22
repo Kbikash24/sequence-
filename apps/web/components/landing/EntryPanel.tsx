@@ -11,6 +11,7 @@ import {
   type UserStatsDTO,
 } from "@sequence/shared";
 import { NicknameForm } from "@/components/NicknameForm";
+import { OnlinePlayers } from "@/components/landing/OnlinePlayers";
 import { Button } from "@/components/ui/Button";
 import { useMounted } from "@/hooks/useClient";
 import { api, ApiError } from "@/services/api";
@@ -197,6 +198,8 @@ export function EntryPanel() {
           {error}
         </p>
       )}
+
+      <OnlinePlayers selfId={user.id} />
 
       {stats && stats.gamesPlayed > 0 && (
         <div className="flex items-center justify-around rounded-2xl bg-white/[0.03] py-3 text-center text-sm ring-1 ring-white/8">

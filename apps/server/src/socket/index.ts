@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { eventSchemas, type Ack, type ClientEventName } from "@sequence/shared";
 import type { TokenService } from "../auth/tokens";
+import type { PresenceManager } from "../presence/PresenceManager";
 import { RoomError } from "../rooms/errors";
 import type { RoomManager } from "../rooms/RoomManager";
 import type { AppServer } from "../rooms/types";
@@ -15,6 +16,7 @@ type RawSocket = {
 export function registerSocketHandlers(
   io: AppServer,
   rooms: RoomManager,
+  presence: PresenceManager,
   tokens: TokenService,
   logger: Logger,
 ) {
@@ -44,9 +46,11 @@ export function registerSocketHandlers(
 
     socket.join(`user:${user.id}`);
     rooms.handleConnect(user);
+    presence.connect(user);
 
     const limiter = new TokenBucket(30, 10);
     const chatLimiter = new TokenBucket(5, 0.5);
+    const challengeLimiter = new TokenBucket(5, 0.2);
 
     const handle = <E extends ClientEventName>(
       event: E,
@@ -118,10 +122,21 @@ export function registerSocketHandlers(
     handle("game:sync", () => rooms.sync(user));
     handle("game:rematch", (p) => rooms.voteRematch(user, p.vote));
     handle("chat:send", (p) => rooms.sendChat(user, p.text), chatLimiter);
+    handle("presence:watch", (p) => presence.watch(socket.id, p.watch));
+    handle(
+      "challenge:send",
+      (p) => presence.send(user, p.toUserId),
+      challengeLimiter,
+    );
+    handle("challenge:respond", (p) =>
+      presence.respond(user, p.challengeId, p.accept),
+    );
+    handle("challenge:cancel", (p) => presence.cancel(user, p.challengeId));
 
     socket.on("disconnect", () => {
       if (activeSockets.get(user.id) !== socket.id) return;
       activeSockets.delete(user.id);
+      presence.disconnect(user.id);
       rooms.handleDisconnect(user);
     });
   });
