@@ -42,12 +42,13 @@ export function HowToPlay() {
             <Reveal delay={i * 0.1} className="h-full">
               <div className="glass glass-hover h-full rounded-2xl p-5">
                 <div className="mb-4 flex items-center gap-3">
-                  <div className="relative h-11 w-11 rounded-xl bg-linear-to-br from-rose-500/40 via-violet-500/40 to-cyan-400/40 shadow-[0_0_20px_-4px_rgba(167,139,250,0.7)] ring-1 ring-white/20 overflow-hidden">
+                  <div className="relative h-11 w-11">
                     <Image
                       src={iconPath}
                       alt={title}
                       fill
-                      className="object-cover"
+                      sizes="44px"
+                      className="object-contain"
                     />
                   </div>
                   <span className="font-mono text-sm text-violet-300/70">

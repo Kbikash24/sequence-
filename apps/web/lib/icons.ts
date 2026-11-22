@@ -1,8 +1,8 @@
 export const ICON_PATHS = {
-  ace: "/lib/icons/ace.png",
-  jackOfSpades: "/lib/icons/jack-of-spades.png",
-  threeDots: "/lib/icons/three-dots.png",
-  trophy: "/lib/icons/trophy.png",
+  ace: "/icons/ace.png",
+  jackOfSpades: "/icons/jack-of-spades.png",
+  threeDots: "/icons/three-dots.png",
+  trophy: "/icons/trophy.png",
 };
 
 export type IconKey = keyof typeof ICON_PATHS;
