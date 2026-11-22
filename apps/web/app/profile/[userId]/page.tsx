@@ -28,7 +28,7 @@ export default function ProfilePage({
         const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
         const token = useSession.getState().token;
         const response = await fetch(
-          `${serverUrl}/profile/${userId}`,
+          `${serverUrl}/api/profile/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
