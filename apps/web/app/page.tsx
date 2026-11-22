@@ -1,16 +1,56 @@
+"use client";
+
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Radio, ShieldCheck, Users } from "lucide-react";
 import { BoardPreview } from "@/components/landing/BoardPreview";
 import { EntryPanel } from "@/components/landing/EntryPanel";
+import { OnlinePlayers } from "@/components/landing/OnlinePlayers";
 import { HowToPlay } from "@/components/landing/HowToPlay";
 import { Logo } from "@/components/ui/Logo";
+import { useSession } from "@/stores/session";
 
 const FEATURES = [
   { icon: Users, label: "1v1 & 2v2 teams" },
   { icon: Radio, label: "Real-time play" },
   { icon: ShieldCheck, label: "Server-verified moves" },
 ];
+
+function RightColumnContent() {
+  const user = useSession((s) => s.user);
+
+  return (
+    <div
+      className="reveal space-y-7 relative mx-auto w-full max-w-md lg:max-w-none"
+      style={{ "--d": "0.35s" } as CSSProperties}
+    >
+      <div className="relative">
+        <FloatingCard
+          symbol="♠"
+          rank="A"
+          className="-left-4 -top-6 sm:-left-8"
+          style={{ "--r": "-12deg" } as CSSProperties}
+        />
+        <FloatingCard
+          symbol="♥"
+          rank="K"
+          red
+          className="-right-3 top-1/3 sm:-right-8"
+          style={{ "--r": "10deg", animationDelay: "1.2s" } as CSSProperties}
+        />
+        <FloatingCard
+          symbol="♦"
+          rank="Q"
+          red
+          className="-bottom-6 left-6"
+          style={{ "--r": "-6deg", animationDelay: "2.4s" } as CSSProperties}
+        />
+        <BoardPreview />
+      </div>
+      {user && <OnlinePlayers selfId={user.id} />}
+    </div>
+  );
+}
 
 export default function HomePage() {
   return (
@@ -69,32 +109,7 @@ export default function HomePage() {
             ))}
           </ul>
         </div>
-        <div
-          className="reveal relative mx-auto w-full max-w-md lg:max-w-none"
-          style={{ "--d": "0.35s" } as CSSProperties}
-        >
-          <FloatingCard
-            symbol="♠"
-            rank="A"
-            className="-left-4 -top-6 sm:-left-8"
-            style={{ "--r": "-12deg" } as CSSProperties}
-          />
-          <FloatingCard
-            symbol="♥"
-            rank="K"
-            red
-            className="-right-3 top-1/3 sm:-right-8"
-            style={{ "--r": "10deg", animationDelay: "1.2s" } as CSSProperties}
-          />
-          <FloatingCard
-            symbol="♦"
-            rank="Q"
-            red
-            className="-bottom-6 left-6"
-            style={{ "--r": "-6deg", animationDelay: "2.4s" } as CSSProperties}
-          />
-          <BoardPreview />
-        </div>
+        <RightColumnContent />
       </section>
 
       <HowToPlay />

@@ -11,7 +11,6 @@ import {
   type UserStatsDTO,
 } from "@sequence/shared";
 import { NicknameForm } from "@/components/NicknameForm";
-import { OnlinePlayers } from "@/components/landing/OnlinePlayers";
 import { Button } from "@/components/ui/Button";
 import { useMounted } from "@/hooks/useClient";
 import { api, ApiError } from "@/services/api";
@@ -86,130 +85,126 @@ export function EntryPanel() {
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_1fr]">
-      <div className="glass space-y-5 rounded-3xl p-6 sm:p-7">
-        <div className="flex items-center justify-between gap-3">
-          <p className="flex items-center gap-2 text-sm text-slate-300">
-            <UserRound className="h-4 w-4" /> Playing as{" "}
-            <strong className="text-white">{user.nickname}</strong>
-          </p>
-          <button
-            type="button"
-            className="text-xs text-slate-400 underline-offset-2 hover:text-white hover:underline"
-            onClick={() => {
-              closeSocket();
-              clear();
-            }}
-          >
-            Change
-          </button>
-        </div>
-
-        <Button
-          size="lg"
-          className="w-full"
-          disabled={!!busy}
-          onClick={() => void createRoom("1v1", "quick")}
+    <div className="glass space-y-5 rounded-3xl p-6 sm:p-7">
+      <div className="flex items-center justify-between gap-3">
+        <p className="flex items-center gap-2 text-sm text-slate-300">
+          <UserRound className="h-4 w-4" /> Playing as{" "}
+          <strong className="text-white">{user.nickname}</strong>
+        </p>
+        <button
+          type="button"
+          className="text-xs text-slate-400 underline-offset-2 hover:text-white hover:underline"
+          onClick={() => {
+            closeSocket();
+            clear();
+          }}
         >
-          {busy === "quick" ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Swords className="h-5 w-5" />
-          )}{" "}
-          Play now · 1v1
-        </Button>
-
-        <div className="rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/8">
-          <p className="mb-3 text-sm font-semibold">Create a private room</p>
-          <div className="flex gap-2">
-            <div
-              role="radiogroup"
-              aria-label="Game mode"
-              className="flex flex-1 rounded-xl bg-white/5 p-1"
-            >
-              {GAME_MODES.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="radio"
-                  aria-checked={mode === m}
-                  onClick={() => setMode(m)}
-                  className={clsx(
-                    "flex-1 rounded-lg py-2 text-sm font-semibold transition",
-                    mode === m
-                      ? "bg-white/15 text-white"
-                      : "text-slate-400 hover:text-white",
-                  )}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-            <Button
-              variant="secondary"
-              disabled={!!busy}
-              onClick={() => void createRoom(mode, "create")}
-            >
-              {busy === "create" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}{" "}
-              Create
-            </Button>
-          </div>
-        </div>
-
-        <form
-          onSubmit={join}
-          className="rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/8"
-        >
-          <label htmlFor="room-code" className="mb-3 block text-sm font-semibold">
-            Join with a code
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="room-code"
-              value={code}
-              onChange={(e) =>
-                setCode(
-                  e.target.value
-                    .toUpperCase()
-                    .replace(/[^A-Z0-9]/g, "")
-                    .slice(0, 6),
-                )
-              }
-              placeholder="ABC123"
-              autoComplete="off"
-              inputMode="text"
-              className="h-11 min-w-0 flex-1 rounded-xl bg-white/6 px-4 font-mono text-lg tracking-[0.3em] ring-1 ring-white/12 placeholder:tracking-[0.3em] placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400"
-            />
-            <Button
-              type="submit"
-              variant="secondary"
-              disabled={!!busy || code.length !== 6}
-            >
-              <LogIn className="h-4 w-4" /> Join
-            </Button>
-          </div>
-        </form>
-
-        {error && (
-          <p role="alert" className="text-sm text-rose-300">
-            {error}
-          </p>
-        )}
-
-        {stats && stats.gamesPlayed > 0 && (
-          <div className="flex items-center justify-around rounded-2xl bg-white/[0.03] py-3 text-center text-sm ring-1 ring-white/8">
-            <Stat label="Played" value={stats.gamesPlayed} />
-            <Stat label="Wins" value={stats.wins} icon />
-            <Stat label="Sequences" value={stats.sequencesCompleted} />
-          </div>
-        )}
+          Change
+        </button>
       </div>
 
-      <OnlinePlayers selfId={user.id} />
+      <Button
+        size="lg"
+        className="w-full"
+        disabled={!!busy}
+        onClick={() => void createRoom("1v1", "quick")}
+      >
+        {busy === "quick" ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <Swords className="h-5 w-5" />
+        )}{" "}
+        Play now · 1v1
+      </Button>
+
+      <div className="rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/8">
+        <p className="mb-3 text-sm font-semibold">Create a private room</p>
+        <div className="flex gap-2">
+          <div
+            role="radiogroup"
+            aria-label="Game mode"
+            className="flex flex-1 rounded-xl bg-white/5 p-1"
+          >
+            {GAME_MODES.map((m) => (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={mode === m}
+                onClick={() => setMode(m)}
+                className={clsx(
+                  "flex-1 rounded-lg py-2 text-sm font-semibold transition",
+                  mode === m
+                    ? "bg-white/15 text-white"
+                    : "text-slate-400 hover:text-white",
+                )}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+          <Button
+            variant="secondary"
+            disabled={!!busy}
+            onClick={() => void createRoom(mode, "create")}
+          >
+            {busy === "create" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}{" "}
+            Create
+          </Button>
+        </div>
+      </div>
+
+      <form
+        onSubmit={join}
+        className="rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/8"
+      >
+        <label htmlFor="room-code" className="mb-3 block text-sm font-semibold">
+          Join with a code
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="room-code"
+            value={code}
+            onChange={(e) =>
+              setCode(
+                e.target.value
+                  .toUpperCase()
+                  .replace(/[^A-Z0-9]/g, "")
+                  .slice(0, 6),
+              )
+            }
+            placeholder="ABC123"
+            autoComplete="off"
+            inputMode="text"
+            className="h-11 min-w-0 flex-1 rounded-xl bg-white/6 px-4 font-mono text-lg tracking-[0.3em] ring-1 ring-white/12 placeholder:tracking-[0.3em] placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400"
+          />
+          <Button
+            type="submit"
+            variant="secondary"
+            disabled={!!busy || code.length !== 6}
+          >
+            <LogIn className="h-4 w-4" /> Join
+          </Button>
+        </div>
+      </form>
+
+      {error && (
+        <p role="alert" className="text-sm text-rose-300">
+          {error}
+        </p>
+      )}
+
+      {stats && stats.gamesPlayed > 0 && (
+        <div className="flex items-center justify-around rounded-2xl bg-white/[0.03] py-3 text-center text-sm ring-1 ring-white/8">
+          <Stat label="Played" value={stats.gamesPlayed} />
+          <Stat label="Wins" value={stats.wins} icon />
+          <Stat label="Sequences" value={stats.sequencesCompleted} />
+        </div>
+      )}
     </div>
   );
 }
