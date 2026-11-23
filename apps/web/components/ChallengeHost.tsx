@@ -78,7 +78,7 @@ export function ChallengeHost() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             role="status"
-            className="glass flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm shadow-xl"
+            className="flex items-center gap-2 rounded-xl border border-white/15 bg-navy-900 px-4 py-2.5 text-sm shadow-xl"
           >
             <Info className="h-4 w-4 text-sky-400" /> {message.text}
           </motion.div>
@@ -91,7 +91,7 @@ export function ChallengeHost() {
             exit={{ opacity: 0, y: -12 }}
             role="alertdialog"
             aria-label={`Challenge from ${c.fromNickname}`}
-            className="glass pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-2xl p-3.5 shadow-2xl ring-1 ring-violet-300/30"
+            className="pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-2xl border border-white/15 bg-navy-900 p-3.5 shadow-2xl ring-1 ring-violet-300/30"
           >
             <Swords className="h-6 w-6 shrink-0 text-violet-300" />
             <p className="min-w-0 flex-1 text-sm">
