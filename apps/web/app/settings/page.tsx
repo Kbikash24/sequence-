@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Save, User } from "lucide-react";
 import { useSession } from "@/stores/session";
 import { Button } from "@/components/ui/Button";
+import { api } from "@/services/api";
 
 interface ProfileSettings {
   nickname: string;
@@ -50,31 +51,12 @@ export default function SettingsPage() {
     setMessage(null);
 
     try {
-      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
       const token = useSession.getState().token;
+      if (!token) throw new Error("Please log in again");
 
-      const response = await fetch(`${serverUrl}/api/profile/update`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          nickname: settings.nickname,
-          bio: settings.bio,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save settings");
-      }
-
+      const res = await api.updateNickname(token, settings.nickname.trim());
+      useSession.getState().setSession(res.token, res.user);
       setMessage({ type: "success", text: "Profile updated successfully!" });
-      
-      // Update local user state
-      useSession.setState((state) => ({
-        user: state.user ? { ...state.user, nickname: settings.nickname } : null,
-      }));
     } catch (err) {
       setMessage({
         type: "error",
@@ -171,11 +153,11 @@ export default function SettingsPage() {
               value={settings.nickname}
               onChange={(e) => setSettings({ ...settings, nickname: e.target.value })}
               placeholder="Enter your nickname"
-              maxLength={32}
+              maxLength={20}
               className="w-full rounded-lg bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
             />
             <p className="text-xs text-slate-400">
-              {settings.nickname.length}/32 characters
+              {settings.nickname.length}/20 characters
             </p>
           </div>
 

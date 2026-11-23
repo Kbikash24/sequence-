@@ -44,6 +44,12 @@ export const api = {
       body: JSON.stringify({ nickname }),
     }),
   me: (token: string) => request<{ user: GuestUser }>("/auth/me", { token }),
+  updateNickname: (token: string, nickname: string) =>
+    request<{ token: string; user: GuestUser }>("/profile/update", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ nickname }),
+    }),
   stats: (token: string) =>
     request<{ stats: UserStatsDTO }>("/stats/me", { token }),
   headToHead: (token: string, userId: string) =>

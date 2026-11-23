@@ -109,6 +109,26 @@ export function createRoutes({
     }
   });
 
+  router.post("/profile/update", auth, async (req, res) => {
+    const parsed = guestLoginSchema.safeParse({ nickname: req.body?.nickname });
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({ error: parsed.error.issues[0]?.message ?? "Invalid nickname" });
+      return;
+    }
+    // The nickname lives in the JWT, so issue a fresh token alongside the user.
+    const user = { id: currentUser(res).id, nickname: parsed.data.nickname };
+    try {
+      await persistence.upsertUser(user);
+    } catch (err) {
+      logger.error("failed to persist nickname", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+    res.json({ token: tokens.sign(user), user });
+  });
+
   router.get("/profile/:userId", auth, async (req, res) => {
     try {
       const profile = await persistence.getPlayerProfile(req.params.userId);

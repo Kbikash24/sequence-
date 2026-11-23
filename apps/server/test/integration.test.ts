@@ -97,6 +97,34 @@ describe("http", () => {
     });
     expect(await me.json()).toEqual({ user: p.user });
   });
+
+  it("updates the nickname and issues a token carrying it", async () => {
+    const { url } = await setup();
+    const p = await player("Alice");
+    const post = (token: string | null, nickname: string) =>
+      fetch(`${url}/api/profile/update`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ nickname }),
+      });
+    expect((await post(null, "Bob")).status).toBe(401);
+    expect((await post(p.token, "<script>")).status).toBe(400);
+
+    const res = await post(p.token, "  Bobby  ");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      token: string;
+      user: { id: string; nickname: string };
+    };
+    expect(body.user).toEqual({ id: p.user.id, nickname: "Bobby" });
+    const me = await fetch(`${url}/api/auth/me`, {
+      headers: { authorization: `Bearer ${body.token}` },
+    });
+    expect(await me.json()).toEqual({ user: body.user });
+  });
 });
 
 describe("rooms", () => {
