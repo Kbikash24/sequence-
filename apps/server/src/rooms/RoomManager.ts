@@ -396,7 +396,21 @@ export class RoomManager {
 
   handleConnect(user: GuestUser): void {
     const room = this.roomOf(user.id);
-    if (room) this.attach(room, user.id);
+    if (!room) return;
+    this.syncNickname(room, user);
+    this.attach(room, user.id);
+  }
+
+  /** Nicknames can change between connections; keep room and game state current. */
+  private syncNickname(room: Room, user: GuestUser): void {
+    const player = room.players.find((p) => p.userId === user.id);
+    if (!player || player.nickname === user.nickname) return;
+    this.addLog(room, "system", `${player.nickname} is now ${user.nickname}`);
+    player.nickname = user.nickname;
+    const enginePlayer = room.game?.players.find((p) => p.userId === user.id);
+    if (enginePlayer) enginePlayer.nickname = user.nickname;
+    this.broadcastRoom(room);
+    if (room.game) this.broadcastGame(room);
   }
 
   handleDisconnect(user: GuestUser): void {

@@ -5,6 +5,7 @@ import {
   type Challenge,
   type ChallengeResolved,
   type OnlineUser,
+  type RoomInfo,
   type RoomSnapshot,
 } from "@sequence/shared";
 import {
@@ -128,6 +129,35 @@ describe("http", () => {
 });
 
 describe("rooms", () => {
+  it("shows a renamed player's new nickname to the rest of the room", async () => {
+    const { url } = await setup();
+    const host = await player("Host");
+    const guest = await player("Guest");
+    const created = await host.emit<RoomSnapshot>("room:create", { mode: "1v1" });
+    if (!created.ok) throw new Error(created.error);
+    await guest.emit("room:join", { code: created.data.room.code });
+
+    const rename = await fetch(`${url}/api/profile/update`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${guest.token}`,
+      },
+      body: JSON.stringify({ nickname: "Newname" }),
+    });
+    const { token } = (await rename.json()) as { token: string };
+
+    const seen = waitFor<RoomInfo>(host.socket, "room:state", (r) =>
+      r.players.some((p) => p.nickname === "Newname"),
+    );
+    const renamed = await connectSocket(url, token);
+    players.push(new TestPlayer(renamed, token, guest.user));
+    expect((await seen).players.map((p) => p.nickname)).toEqual([
+      "Host",
+      "Newname",
+    ]);
+  });
+
   it("rejects unauthenticated sockets", async () => {
     const { url } = await setup();
     await expect(connectSocket(url, "not-a-token")).rejects.toThrow(
