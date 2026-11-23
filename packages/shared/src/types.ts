@@ -171,6 +171,32 @@ export interface PlayerProfile {
   level: number;
 }
 
+export type MatchOutcome = "win" | "loss" | "draw";
+
+/** A finished game two players both took part in, from the viewer's perspective. */
+export interface HeadToHeadMatch {
+  gameId: string;
+  mode: GameMode;
+  /** Whether the other player was on the opposing team or the viewer's team. */
+  relation: "opponent" | "teammate";
+  outcome: MatchOutcome;
+  reason: FinishReason | null;
+  endedAt: number;
+}
+
+export interface HeadToHeadSummary {
+  /** Games where the two players were on opposing teams (viewer's results). */
+  versus: { matches: number; wins: number; losses: number; draws: number };
+  /** Games where the two players were on the same team. */
+  together: { matches: number; wins: number; losses: number; draws: number };
+}
+
+export interface HeadToHead {
+  opponent: { userId: string; nickname: string };
+  summary: HeadToHeadSummary;
+  recent: HeadToHeadMatch[];
+}
+
 export interface HandPayload {
   gameId: string;
   version: number;

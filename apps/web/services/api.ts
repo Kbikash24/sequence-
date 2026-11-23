@@ -1,4 +1,4 @@
-import type { GuestUser, UserStatsDTO } from "@sequence/shared";
+import type { GuestUser, HeadToHead, UserStatsDTO } from "@sequence/shared";
 import { SERVER_URL } from "@/lib/utils";
 
 export class ApiError extends Error {
@@ -46,4 +46,9 @@ export const api = {
   me: (token: string) => request<{ user: GuestUser }>("/auth/me", { token }),
   stats: (token: string) =>
     request<{ stats: UserStatsDTO }>("/stats/me", { token }),
+  headToHead: (token: string, userId: string) =>
+    request<{ headToHead: HeadToHead }>(
+      `/profile/${encodeURIComponent(userId)}/head-to-head`,
+      { token },
+    ),
 };

@@ -2,6 +2,7 @@ import type { GameState } from "@sequence/game-engine";
 import type {
   GameMode,
   GuestUser,
+  HeadToHead,
   RoomStatus,
   Team,
   UserStatsDTO,
@@ -37,6 +38,8 @@ export interface Persistence {
   recordGameFinished(state: GameState): Promise<void>;
   getUserStats(userId: string): Promise<UserStatsDTO | null>;
   getPlayerProfile(userId: string): Promise<{ nickname: string; createdAt: number; stats: UserStatsDTO } | null>;
+  /** Null when the other player is unknown. */
+  getHeadToHead(viewerId: string, otherId: string): Promise<HeadToHead | null>;
   close(): Promise<void>;
 }
 
@@ -53,6 +56,9 @@ export class NoopPersistence implements Persistence {
     return null;
   }
   async getPlayerProfile() {
+    return null;
+  }
+  async getHeadToHead() {
     return null;
   }
   async close() {}

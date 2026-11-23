@@ -3,10 +3,12 @@ import { countSequences, type GameState } from "@sequence/game-engine";
 import type {
   GameMode,
   GuestUser,
+  HeadToHead,
   RoomStatus,
   Team,
   UserStatsDTO,
 } from "@sequence/shared";
+import { buildHeadToHead, type SharedGameRow } from "./headToHead";
 import type { MoveRecord, Persistence } from "./persistence";
 
 const toDbMode = (mode: GameMode): DbGameMode =>
@@ -178,6 +180,59 @@ export class PrismaPersistence implements Persistence {
       createdAt: user.createdAt.getTime(),
       stats,
     };
+  }
+
+  async getHeadToHead(
+    viewerId: string,
+    otherId: string,
+  ): Promise<HeadToHead | null> {
+    const other = await this.prisma.user.findUnique({
+      where: { id: otherId },
+      select: { id: true, nickname: true },
+    });
+    if (!other) return null;
+
+    const games = await this.prisma.game.findMany({
+      where: {
+        status: "finished",
+        result: { isNot: null },
+        AND: [
+          { players: { some: { userId: viewerId } } },
+          { players: { some: { userId: otherId } } },
+        ],
+      },
+      select: {
+        id: true,
+        mode: true,
+        endedAt: true,
+        startedAt: true,
+        players: {
+          where: { userId: { in: [viewerId, otherId] } },
+          select: { userId: true, team: true },
+        },
+        result: { select: { winnerTeam: true, reason: true } },
+      },
+    });
+
+    const rows: SharedGameRow[] = [];
+    for (const g of games) {
+      const viewer = g.players.find((p) => p.userId === viewerId);
+      const them = g.players.find((p) => p.userId === otherId);
+      if (!viewer || !them || !g.result) continue;
+      rows.push({
+        gameId: g.id,
+        mode: g.mode === "one_v_one" ? "1v1" : "2v2",
+        endedAt: (g.endedAt ?? g.startedAt).getTime(),
+        reason: g.result.reason,
+        winnerTeam: g.result.winnerTeam,
+        viewerTeam: viewer.team,
+        otherTeam: them.team,
+      });
+    }
+    return buildHeadToHead(
+      { userId: other.id, nickname: other.nickname },
+      rows,
+    );
   }
 
   async close() {

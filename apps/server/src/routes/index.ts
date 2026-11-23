@@ -8,6 +8,8 @@ import type { RoomManager } from "../rooms/RoomManager";
 import type { Logger } from "../services/logger";
 import type { Persistence } from "../services/persistence";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 interface RouteDeps {
   tokens: TokenService;
   rooms: RoomManager;
@@ -133,6 +135,32 @@ export function createRoutes({
         error: err instanceof Error ? err.message : String(err),
       });
       res.status(503).json({ error: "Profile unavailable" });
+    }
+  });
+
+  router.get("/profile/:userId/head-to-head", auth, async (req, res) => {
+    const viewerId = currentUser(res).id;
+    const otherId = req.params.userId;
+    if (!UUID_RE.test(otherId)) {
+      res.status(404).json({ error: "Player not found" });
+      return;
+    }
+    if (otherId === viewerId) {
+      res.status(400).json({ error: "Pick a different player" });
+      return;
+    }
+    try {
+      const result = await persistence.getHeadToHead(viewerId, otherId);
+      if (!result) {
+        res.status(404).json({ error: "Player not found" });
+        return;
+      }
+      res.json({ headToHead: result });
+    } catch (err) {
+      logger.error("failed to load head-to-head", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      res.status(503).json({ error: "Match history unavailable" });
     }
   });
 

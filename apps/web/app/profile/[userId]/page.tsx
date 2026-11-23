@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Trophy, Flame, Zap } from "lucide-react";
 import { useSession } from "@/stores/session";
+import { HeadToHeadCard } from "@/components/profile/HeadToHeadCard";
 import type { PlayerProfile } from "@sequence/shared";
 
 export default function ProfilePage({
@@ -204,6 +205,9 @@ export default function ProfilePage({
               </div>
             </div>
           )}
+
+          {/* Head-to-head */}
+          {!isOwnProfile && user && <HeadToHeadCard userId={userId!} />}
 
           {/* Action Buttons */}
           {!isOwnProfile && user && (
