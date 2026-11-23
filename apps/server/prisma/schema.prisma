@@ -43,16 +43,38 @@ enum FinishReason {
   stalemate
 }
 
+enum FriendshipStatus {
+  pending
+  accepted
+}
+
 model User {
-  id          String       @id @db.Uuid
-  nickname    String       @db.VarChar(20)
-  createdAt   DateTime     @default(now())
-  lastSeenAt  DateTime     @default(now())
-  hostedRooms Room[]       @relation("RoomHost")
-  roomPlayers RoomPlayer[]
-  gamePlayers GamePlayer[]
-  moves       GameMove[]
-  stats       UserStats?
+  id                String       @id @db.Uuid
+  nickname          String       @db.VarChar(20)
+  createdAt         DateTime     @default(now())
+  lastSeenAt        DateTime     @default(now())
+  hostedRooms       Room[]       @relation("RoomHost")
+  roomPlayers       RoomPlayer[]
+  gamePlayers       GamePlayer[]
+  moves             GameMove[]
+  stats             UserStats?
+  friendRequests    Friendship[] @relation("FriendRequester")
+  friendInvitations Friendship[] @relation("FriendAddressee")
+}
+
+/// One row per pair: requester asked addressee; `accepted` makes it mutual.
+model Friendship {
+  id          String           @id @default(uuid()) @db.Uuid
+  requesterId String           @db.Uuid
+  addresseeId String           @db.Uuid
+  status      FriendshipStatus @default(pending)
+  createdAt   DateTime         @default(now())
+  respondedAt DateTime?
+  requester   User             @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User             @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
 }
 
 model Room {

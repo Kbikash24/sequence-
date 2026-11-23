@@ -1,4 +1,10 @@
-import type { GuestUser, HeadToHead, UserStatsDTO } from "@sequence/shared";
+import type {
+  FriendsList,
+  FriendStatus,
+  GuestUser,
+  HeadToHead,
+  UserStatsDTO,
+} from "@sequence/shared";
 import { SERVER_URL } from "@/lib/utils";
 
 export class ApiError extends Error {
@@ -56,5 +62,26 @@ export const api = {
     request<{ headToHead: HeadToHead }>(
       `/profile/${encodeURIComponent(userId)}/head-to-head`,
       { token },
+    ),
+  friends: (token: string) => request<FriendsList>("/friends", { token }),
+  friendStatus: (token: string, userId: string) =>
+    request<{ status: FriendStatus }>(
+      `/friends/${encodeURIComponent(userId)}/status`,
+      { token },
+    ),
+  sendFriendRequest: (token: string, userId: string) =>
+    request<{ status: FriendStatus }>(
+      `/friends/${encodeURIComponent(userId)}/request`,
+      { method: "POST", token },
+    ),
+  respondFriendRequest: (token: string, userId: string, accept: boolean) =>
+    request<{ status: FriendStatus }>(
+      `/friends/${encodeURIComponent(userId)}/respond`,
+      { method: "POST", token, body: JSON.stringify({ accept }) },
+    ),
+  removeFriend: (token: string, userId: string) =>
+    request<{ status: FriendStatus }>(
+      `/friends/${encodeURIComponent(userId)}`,
+      { method: "DELETE", token },
     ),
 };

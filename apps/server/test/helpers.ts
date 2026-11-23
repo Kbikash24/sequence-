@@ -12,7 +12,7 @@ import type {
 import { createSequenceServer, type SequenceServer } from "../src/app";
 import type { AppConfig } from "../src/config";
 import { createLogger } from "../src/services/logger";
-import { NoopPersistence } from "../src/services/persistence";
+import { NoopPersistence, type Persistence } from "../src/services/persistence";
 
 export type ClientSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -23,6 +23,7 @@ export interface TestServer {
 
 export async function startServer(
   overrides: Partial<AppConfig> = {},
+  persistence: Persistence = new NoopPersistence(),
 ): Promise<TestServer> {
   const config: AppConfig = {
     nodeEnv: "test",
@@ -34,7 +35,7 @@ export async function startServer(
     ...overrides,
   };
   const server = createSequenceServer(config, {
-    persistence: new NoopPersistence(),
+    persistence,
     logger: createLogger({ level: "error" }),
   });
   await new Promise<void>((resolve) => server.httpServer.listen(0, resolve));

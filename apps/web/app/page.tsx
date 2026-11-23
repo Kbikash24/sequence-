@@ -6,6 +6,7 @@ import { Radio, ShieldCheck, Users } from "lucide-react";
 import { BoardPreview } from "@/components/landing/BoardPreview";
 import { EntryPanel } from "@/components/landing/EntryPanel";
 import { OnlinePlayers } from "@/components/landing/OnlinePlayers";
+import { FriendsPanel } from "@/components/landing/FriendsPanel";
 import { HowToPlay } from "@/components/landing/HowToPlay";
 import { Logo } from "@/components/ui/Logo";
 import { useSession } from "@/stores/session";
@@ -48,6 +49,7 @@ function RightColumnContent() {
         <BoardPreview />
       </div>
       {user && <OnlinePlayers selfId={user.id} />}
+      {user && <FriendsPanel />}
     </div>
   );
 }

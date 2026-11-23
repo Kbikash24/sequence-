@@ -162,6 +162,26 @@ export interface UserStatsDTO {
   sequencesCompleted: number;
 }
 
+/** Relationship between the viewer and another player. */
+export type FriendStatus =
+  | "none"
+  | "friends"
+  | "request_sent"
+  | "request_received";
+
+export interface FriendUser {
+  userId: string;
+  nickname: string;
+}
+
+export interface FriendsList {
+  friends: FriendUser[];
+  /** Requests other players sent to the viewer. */
+  incoming: FriendUser[];
+  /** Requests the viewer sent that are still pending. */
+  outgoing: FriendUser[];
+}
+
 export interface PlayerProfile {
   userId: string;
   nickname: string;

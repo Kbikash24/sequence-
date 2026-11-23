@@ -1,6 +1,8 @@
 import { PrismaClient, type GameMode as DbGameMode } from "@prisma/client";
 import { countSequences, type GameState } from "@sequence/game-engine";
 import type {
+  FriendsList,
+  FriendStatus,
   GameMode,
   GuestUser,
   HeadToHead,
@@ -13,6 +15,22 @@ import type { MoveRecord, Persistence } from "./persistence";
 
 const toDbMode = (mode: GameMode): DbGameMode =>
   mode === "1v1" ? "one_v_one" : "two_v_two";
+
+const pairWhere = (a: string, b: string) => ({
+  OR: [
+    { requesterId: a, addresseeId: b },
+    { requesterId: b, addresseeId: a },
+  ],
+});
+
+const friendStatusOf = (
+  row: { requesterId: string; status: "pending" | "accepted" } | null,
+  viewerId: string,
+): FriendStatus => {
+  if (!row) return "none";
+  if (row.status === "accepted") return "friends";
+  return row.requesterId === viewerId ? "request_sent" : "request_received";
+};
 
 export class PrismaPersistence implements Persistence {
   constructor(private readonly prisma = new PrismaClient()) {}
@@ -233,6 +251,96 @@ export class PrismaPersistence implements Persistence {
       { userId: other.id, nickname: other.nickname },
       rows,
     );
+  }
+
+  async getFriendStatus(
+    viewerId: string,
+    otherId: string,
+  ): Promise<FriendStatus> {
+    return friendStatusOf(await this.findFriendship(viewerId, otherId), viewerId);
+  }
+
+  async sendFriendRequest(
+    fromId: string,
+    toId: string,
+  ): Promise<FriendStatus | null> {
+    const target = await this.prisma.user.findUnique({
+      where: { id: toId },
+      select: { id: true },
+    });
+    if (!target) return null;
+    // Serializable so two players adding each other at once can't create two rows.
+    return this.prisma.$transaction(
+      async (tx) => {
+        const existing = await tx.friendship.findFirst({
+          where: pairWhere(fromId, toId),
+        });
+        if (!existing) {
+          await tx.friendship.create({
+            data: { requesterId: fromId, addresseeId: toId },
+          });
+          return "request_sent";
+        }
+        if (existing.status === "pending" && existing.addresseeId === fromId) {
+          await tx.friendship.update({
+            where: { id: existing.id },
+            data: { status: "accepted", respondedAt: new Date() },
+          });
+          return "friends";
+        }
+        return friendStatusOf(existing, fromId);
+      },
+      { isolationLevel: "Serializable" },
+    );
+  }
+
+  async respondFriendRequest(
+    userId: string,
+    fromId: string,
+    accept: boolean,
+  ): Promise<FriendStatus | null> {
+    const request = await this.prisma.friendship.findFirst({
+      where: { requesterId: fromId, addresseeId: userId, status: "pending" },
+    });
+    if (!request) return null;
+    if (accept) {
+      await this.prisma.friendship.update({
+        where: { id: request.id },
+        data: { status: "accepted", respondedAt: new Date() },
+      });
+      return "friends";
+    }
+    await this.prisma.friendship.delete({ where: { id: request.id } });
+    return "none";
+  }
+
+  async removeFriendship(userId: string, otherId: string): Promise<void> {
+    await this.prisma.friendship.deleteMany({ where: pairWhere(userId, otherId) });
+  }
+
+  async listFriends(userId: string): Promise<FriendsList> {
+    const rows = await this.prisma.friendship.findMany({
+      where: { OR: [{ requesterId: userId }, { addresseeId: userId }] },
+      orderBy: { createdAt: "desc" },
+      include: {
+        requester: { select: { id: true, nickname: true } },
+        addressee: { select: { id: true, nickname: true } },
+      },
+    });
+    const list: FriendsList = { friends: [], incoming: [], outgoing: [] };
+    for (const row of rows) {
+      const iAsked = row.requesterId === userId;
+      const other = iAsked ? row.addressee : row.requester;
+      const entry = { userId: other.id, nickname: other.nickname };
+      if (row.status === "accepted") list.friends.push(entry);
+      else (iAsked ? list.outgoing : list.incoming).push(entry);
+    }
+    list.friends.sort((a, b) => a.nickname.localeCompare(b.nickname));
+    return list;
+  }
+
+  private findFriendship(a: string, b: string) {
+    return this.prisma.friendship.findFirst({ where: pairWhere(a, b) });
   }
 
   async close() {

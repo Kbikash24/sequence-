@@ -1,12 +1,19 @@
 import { randomUUID } from "node:crypto";
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
-import { guestLoginSchema, roomCodeSchema } from "@sequence/shared";
+import {
+  guestLoginSchema,
+  roomCodeSchema,
+  type FriendStatus,
+} from "@sequence/shared";
 import { currentUser, requireAuth } from "../auth/middleware";
 import type { TokenService } from "../auth/tokens";
 import type { RoomManager } from "../rooms/RoomManager";
 import type { Logger } from "../services/logger";
-import type { Persistence } from "../services/persistence";
+import {
+  FriendsUnavailableError,
+  type Persistence,
+} from "../services/persistence";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -183,6 +190,97 @@ export function createRoutes({
       res.status(503).json({ error: "Match history unavailable" });
     }
   });
+
+  router.get("/friends", auth, async (_req, res) => {
+    try {
+      res.json(await persistence.listFriends(currentUser(res).id));
+    } catch (err) {
+      friendsFailed(res, err, "failed to load friends");
+    }
+  });
+
+  /** Wraps a friend action on `:userId` with validation and error handling. */
+  const friendAction =
+    (
+      fn: (
+        viewerId: string,
+        otherId: string,
+        req: Request,
+      ) => Promise<{ status?: FriendStatus } | null>,
+    ) =>
+    async (req: Request, res: Response) => {
+      const viewerId = currentUser(res).id;
+      const otherId = req.params.userId ?? "";
+      if (!UUID_RE.test(otherId)) {
+        res.status(404).json({ error: "Player not found" });
+        return;
+      }
+      if (otherId === viewerId) {
+        res.status(400).json({ error: "You can't do that to yourself" });
+        return;
+      }
+      try {
+        const result = await fn(viewerId, otherId, req);
+        if (!result) {
+          res.status(404).json({ error: "Player or request not found" });
+          return;
+        }
+        res.json(result);
+      } catch (err) {
+        friendsFailed(res, err, "friend action failed");
+      }
+    };
+
+  const friendsFailed = (res: Response, err: unknown, message: string) => {
+    if (err instanceof FriendsUnavailableError) {
+      res.status(503).json({ error: err.message });
+      return;
+    }
+    logger.error(message, {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    res.status(503).json({ error: "Friends unavailable" });
+  };
+
+  router.get(
+    "/friends/:userId/status",
+    auth,
+    friendAction(async (viewerId, otherId) => ({
+      status: await persistence.getFriendStatus(viewerId, otherId),
+    })),
+  );
+
+  router.post(
+    "/friends/:userId/request",
+    auth,
+    friendAction(async (viewerId, otherId) => {
+      const status = await persistence.sendFriendRequest(viewerId, otherId);
+      return status ? { status } : null;
+    }),
+  );
+
+  router.post(
+    "/friends/:userId/respond",
+    auth,
+    friendAction(async (viewerId, otherId, req) => {
+      const accept = req.body?.accept === true;
+      const status = await persistence.respondFriendRequest(
+        viewerId,
+        otherId,
+        accept,
+      );
+      return status ? { status } : null;
+    }),
+  );
+
+  router.delete(
+    "/friends/:userId",
+    auth,
+    friendAction(async (viewerId, otherId) => {
+      await persistence.removeFriendship(viewerId, otherId);
+      return { status: "none" };
+    }),
+  );
 
   return router;
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Trophy, Flame, Zap } from "lucide-react";
 import { useSession } from "@/stores/session";
 import { HeadToHeadCard } from "@/components/profile/HeadToHeadCard";
+import { FriendButton } from "@/components/profile/FriendButton";
 import type { PlayerProfile } from "@sequence/shared";
 
 export default function ProfilePage({
@@ -215,9 +216,7 @@ export default function ProfilePage({
               <button className="flex-1 glass glass-hover rounded-lg py-2.5 text-sm font-medium text-slate-200 transition">
                 Challenge
               </button>
-              <button className="flex-1 glass glass-hover rounded-lg py-2.5 text-sm font-medium text-slate-200 transition">
-                Add Friend
-              </button>
+              <FriendButton userId={userId!} />
             </div>
           )}
         </div>
